@@ -1,14 +1,12 @@
 #!/bin/bash
 
-if [ x$1 = x-s ]; then
-    ARGS=-s
-    shift
-elif [ x$1 = x-x ]; then
-    ARGS=-x
-    shift
-else
-    ARGS=-x
+ARGS=("-x")
+self=$(basename "$0")
+if [[ "$self" = "pls" ]]; then
+	ARGS=("-s");
 fi
+echo "${ARGS[@]}"
+exit 1
 
 # Make sure /tmp/perflock exists and is world writable.  Don't rely on
 # the redirection to create the file, or we'll have to run the
@@ -16,11 +14,11 @@ fi
 (umask 000; touch /tmp/perflock)
 
 (
-    if ! flock -n $ARGS 200; then
+    if ! flock -n "${ARGS[@]}" 200; then
         echo Waiting for lock >&2
         # wholock has to be setuid root, so it doesn't live on NFS.
         [ -x /usr/bin/wholock ] && /usr/bin/wholock >&2 200>&-
-        flock $ARGS 200
+        flock "${ARGS[@]}" 200
         echo Got lock >&2
     fi
 
