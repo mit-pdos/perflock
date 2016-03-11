@@ -1,0 +1,35 @@
+#!/bin/bash
+
+if [ x$1 = x-s ]; then
+    ARGS=-s
+    shift
+elif [ x$1 = x-x ]; then
+    ARGS=-x
+    shift
+else
+    ARGS=-x
+fi
+
+# Make sure /tmp/perflock exists and is world writable.  Don't rely on
+# the redirection to create the file, or we'll have to run the
+# subcommand with a bad umask.
+(umask 000; touch /tmp/perflock)
+
+(
+    if ! flock -n $ARGS 200; then
+        echo Waiting for lock >&2
+        # wholock has to be setuid root, so it doesn't live on NFS.
+        [ -x /usr/bin/wholock ] && /usr/bin/wholock >&2 200>&-
+        flock $ARGS 200
+        echo Got lock >&2
+    fi
+
+    # AC: This keeps claiming the system is busy when it isn't
+#    if [ x$ARGS == x-x ]; then
+#        [ -x `dirname $0`/loadet.pl ] && `dirname $0`/loadet.pl
+#    fi
+
+    # We need to close the lockfile FD in case the command forks off
+    # children that it doesn't wait for (e.g., daemons)
+    "$@" 200>&-
+) 200>/tmp/perflock
