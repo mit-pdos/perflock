@@ -5,8 +5,6 @@ self=$(basename "$0")
 if [[ "$self" = "pls" ]]; then
 	ARGS=("-s");
 fi
-echo "${ARGS[@]}"
-exit 1
 
 # Make sure /tmp/perflock exists and is world writable.  Don't rely on
 # the redirection to create the file, or we'll have to run the
