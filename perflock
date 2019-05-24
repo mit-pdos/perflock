@@ -6,10 +6,11 @@ if [[ "$self" = "pls" ]]; then
 	ARGS=("-s");
 fi
 
-# Make sure /tmp/perflock exists and is world writable.  Don't rely on
-# the redirection to create the file, or we'll have to run the
-# subcommand with a bad umask.
-(umask 000; touch /tmp/perflock)
+if [[ ! -e /run/perflock ]]; then
+	echo "/run/perflock did not exist"
+	echo "make sure it exists and is writeable by any users of perflock"
+	exit 1
+fi
 
 (
     if ! flock -n "${ARGS[@]}" 200; then
@@ -28,4 +29,4 @@ fi
     # We need to close the lockfile FD in case the command forks off
     # children that it doesn't wait for (e.g., daemons)
     "$@" 200>&-
-) 200>/tmp/perflock
+) 200>/run/perflock

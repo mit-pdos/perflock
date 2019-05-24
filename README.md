@@ -4,6 +4,15 @@ Perflock is a tool that aids groups in sharing access to multi-user
 machines. It acts as a RWMutex, allowing either one process exclusive
 access, or multiple processes to that concurrent access.
 
+## Setup
+
+Perflock uses a file lock to mediate access to the machine. You need to
+create the lock file `/run/perflock` before running perflock, and then
+set its permissions such that it is writeable by anyone who will run
+`perflock`.
+
+## Usage
+
 To run an exclusive job (for example, a performance experiment that
 requires all cores):
 
